@@ -1,10 +1,38 @@
-
 ###> symfony/framework-bundle ###
-/.env.local
+.env.local
+.env.dev
+.env.prod
+/.env.test
+/env.local
+/.env.dev
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
 /vendor/
+
 ###< symfony/framework-bundle ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+###> JetBrain ###
+.idea/*
+###< JetBrain ###
+
+###> Uploads ###
+public/uploads/*
+###< Uploads ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###< Symfony CLI ###
+/.php-version
+###< Symfony CLI ###
+
+.htaccess
