@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Utils\Validation\Rules;
+
+use App\Utils\Constants\ValidationType;
+use App\Utils\Validation\ValidationRules;
+
+class GetUserSecuredValidationRules extends ValidationRules
+{
+
+    public static array $validationRules = [
+        'id' => [
+            'label' => 'Users',
+            'rules' => [ValidationType::REQUIRED, ValidationType::INTEGER]
+        ]
+    ];
+
+    public static function getValidationRules(): array
+    {
+        return self::$validationRules;
+    }
+
+}

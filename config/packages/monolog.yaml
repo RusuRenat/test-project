@@ -1,0 +1,13 @@
+monolog:
+    channels: [ 'api' ]
+    handlers:
+
+        log_file_debug:
+            level: info
+            type: stream
+            path: '%kernel.logs_dir%/info.log'
+
+        log_file_error:
+            level: error
+            type: stream
+            path: '%kernel.logs_dir%/error.log'

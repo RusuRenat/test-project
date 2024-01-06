@@ -1,0 +1,6 @@
+security:
+    # ...
+    password_hashers:
+        harsh:
+            algorithm: auto
+            cost: 15

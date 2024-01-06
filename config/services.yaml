@@ -4,9 +4,34 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app_env: '%kernel.environment%'
+    app_scheme: '%env(APP_SCHEME)%'
+    locale: 'en'
 
-services:
-    # default configuration for services in *this* file
+    project:
+        api_name: '%env(API_NAME)%'
+        web_url: '%env(WEB_URL)%'
+        token_ttl: '%env(JWT_TOKEN_TTL)%'
+        refresh_token_ttl: '%env(JWT_REFRESH_TOKEN_TTL)%'
+        token_ttl_remember_me: '%env(JWT_TOKEN_TTL_REMEMBER_ME)%'
+        path: '%kernel.project_dir%/public/'
+        support_email: '%env(SUPPORT_EMAIL)%'
+        maintainer_email: '%env(MAINTAINER_EMAIL)%'
+        email_template_path: 'emails/messages/{_PARAM_}.html.twig'
+
+    storage:
+        upload_dir: 'uploads'
+        download_dir: 'downloads'
+
+    recaptcha:
+        v2_public_key: '%env(RECAPTCHA_V2_PUBLIC_KEY)%'
+        v2_secret_key: '%env(RECAPTCHA_V2_SECRET_KEY)%'
+        v3_public_key: '%env(RECAPTCHA_V3_PUBLIC_KEY)%'
+        v3_secret_key: '%env(RECAPTCHA_V3_SECRET_KEY)%'
+
+    deny_access:
+
+services: # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
@@ -14,11 +39,38 @@ services:
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
-        resource: '../src/'
-        exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Controller\:
+        resource: '../src/Controller'
+        arguments: [ '@monolog.logger.api', '@lexik_jwt_authentication.jwt_manager', '@gesdinet.jwtrefreshtoken.refresh_token_manager' ]
+        tags: [ 'controller.service_arguments' ]
+
+    App\Utils\Module\Security\SecurityManager:
+        arguments: [ '@doctrine.orm.entity_manager', '%deny_access%' ]
+        public: false
+
+    App\Utils\Validation\ValidationManager:
+        calls:
+            - [ setRequest, [ "@request_stack" ] ]
+
+    App\Utils\Module\Email\EmailManager:
+        arguments: [ '%project%' ]
+        public: false
+
+    App\Utils\Module\Media\MediaManager:
+        arguments: [ '%project%', '@request_stack', '%storage%' ]
+        #        arguments: [ '%project%', '@request_stack', '%storage%', '@aws.s3' ]
+        public: false
+
+    App\EventListener\SecurityListener:
+        arguments: [ '@App\Utils\Module\Security\SecurityManager' ]
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller }
+
+    App\EventListener\AuthenticationErrorListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_invalid, method: onInvalidToken }
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_expired, method: onExpiredToken }
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_not_found, method: onNotFoundToken }
